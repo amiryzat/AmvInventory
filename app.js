@@ -47,6 +47,7 @@ window.onload = function () {
     setupEnterSubmit('add-modal', addItem);
     setupEnterSubmit('edit-modal', saveEditItem);
     setupEnterSubmit('sales-modal', saveSalesDrop);
+    setupEnterSubmit('mark-sold-modal', confirmMarkSold);
 
     // NEW: Restore last visited page instead of defaulting to inventory
     restorePageContext();
@@ -359,7 +360,7 @@ function renderTableSection(tableBodyId, countId, items, isSoldTable = false, se
             <td>${profitDisplay}</td>
             <td>${lossDisplay}</td>
             <td>
-                <select class="status-select ${statusClass}" onchange="updateStatus('${item.id}', this)">
+                <select class="status-select ${statusClass}" onchange="updateStatus('${item.id}', this, '${item.name.replace(/'/g, "\\'")}', ${cost}, ${sell})">
                     <option value="available" ${item.status === 'available' ? 'selected' : ''}>Available</option>
                     <option value="sold" ${item.status === 'sold' ? 'selected' : ''}>Sold</option>
                 </select>
@@ -723,27 +724,99 @@ function getSalesStatus(dateStr, timeStr) {
 }
 
 // =======================================================
-// UPDATED: STATUS UPDATE LOGIC
+// UPDATED: STATUS UPDATE LOGIC & MARK SOLD MODAL
 // =======================================================
-async function updateStatus(id, selectEl) {
-    const newStatus = selectEl.value;
-    selectEl.className = `status-select ${newStatus}`;
+let currentUpdateSelectEl = null;
 
-    const updatePayload = { status: newStatus };
+function openMarkSoldModal(id, name, cost, listedPrice, selectEl) {
+    document.getElementById('sold-item-id').value = id;
+    document.getElementById('sold-item-name').innerText = name;
+    document.getElementById('sold-item-cost').innerText = `RM ${cost}`;
+    document.getElementById('sold-item-cost').dataset.val = cost;
+    document.getElementById('sold-item-listed').innerText = `RM ${listedPrice}`;
+    document.getElementById('sold-final-price').value = listedPrice;
 
-    // NEW: Handle drop isolation logic
-    if (newStatus === 'sold') {
-        if (currentSalesDropId) {
-            // Sold inside a specific drop
-            updatePayload.sold_in_drop_id = currentSalesDropId;
-        } else {
-            // Sold from generic inventory (reset drop attribution)
-            updatePayload.sold_in_drop_id = null;
-        }
+    currentUpdateSelectEl = selectEl;
+    updateProfitPreview();
+
+    document.getElementById('mark-sold-modal').style.display = 'flex';
+    document.getElementById('sold-final-price').focus();
+}
+
+function closeMarkSoldModal() {
+    document.getElementById('mark-sold-modal').style.display = 'none';
+    if (currentUpdateSelectEl) {
+        currentUpdateSelectEl.value = 'available';
+        currentUpdateSelectEl.className = 'status-select available';
+        currentUpdateSelectEl = null;
+    }
+}
+
+function updateProfitPreview() {
+    const cost = parseFloat(document.getElementById('sold-item-cost').dataset.val) || 0;
+    const finalPrice = parseFloat(document.getElementById('sold-final-price').value);
+    const previewEl = document.getElementById('sold-profit-preview');
+
+    if (isNaN(finalPrice) || document.getElementById('sold-final-price').value === '') {
+        previewEl.innerText = "--";
+        previewEl.className = "";
+        return;
+    }
+
+    const diff = finalPrice - cost;
+    if (diff > 0) {
+        previewEl.innerText = `Profit: +RM ${diff.toFixed(2).replace(/\.00$/, '')}`;
+        previewEl.className = "text-green";
+    } else if (diff < 0) {
+        previewEl.innerText = `Loss: -RM ${Math.abs(diff).toFixed(2).replace(/\.00$/, '')}`;
+        previewEl.className = "text-red";
     } else {
-        // If status is 'available', it is no longer sold in ANY drop
+        previewEl.innerText = `Break-even: RM 0`;
+        previewEl.className = "text-neutral";
+    }
+}
+
+async function confirmMarkSold() {
+    const id = document.getElementById('sold-item-id').value;
+    const finalPrice = parseFloat(document.getElementById('sold-final-price').value);
+
+    if (isNaN(finalPrice) || finalPrice < 0 || document.getElementById('sold-final-price').value === '') {
+        alert("Please enter a valid final sale price.");
+        return;
+    }
+
+    const updatePayload = {
+        status: 'sold',
+        sell_price: finalPrice
+    };
+
+    if (currentSalesDropId) {
+        updatePayload.sold_in_drop_id = currentSalesDropId;
+    } else {
         updatePayload.sold_in_drop_id = null;
     }
+
+    const { error } = await db.from('items').update(updatePayload).eq('id', id);
+    if (!error) {
+        currentUpdateSelectEl = null;
+        closeMarkSoldModal();
+        if (currentSalesDropId) fetchSalesItems(currentSalesDropId); else fetchItems();
+        fetchInventoryTotal();
+    } else {
+        alert(error.message);
+    }
+}
+
+async function updateStatus(id, selectEl, name, cost, listedPrice) {
+    const newStatus = selectEl.value;
+
+    if (newStatus === 'sold') {
+        openMarkSoldModal(id, name, cost, listedPrice, selectEl);
+        return;
+    }
+
+    selectEl.className = `status-select ${newStatus}`;
+    const updatePayload = { status: newStatus, sold_in_drop_id: null };
 
     await db.from('items').update(updatePayload).eq('id', id);
 

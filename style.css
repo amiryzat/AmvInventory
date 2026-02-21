@@ -646,6 +646,34 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     margin-top: 5px;
 }
 
+.readonly-value {
+    background: #222;
+    padding: 10px 12px;
+    border-radius: 4px;
+    border: 1px solid #333;
+    color: #ccc;
+    font-size: 14px;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profit-preview-box {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 15px;
+}
+
+.profit-preview-box .text-green { color: #4ade80; }
+.profit-preview-box .text-red { color: #f87171; }
+.profit-preview-box .text-neutral { color: #fff; }
+
 .add-group {
     position: relative;
     display: flex;
