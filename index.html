@@ -16,6 +16,7 @@
         <div class="menu">
             <button onclick="showPage('inventory')" class="active-btn" id="btn-inv">Inventory</button>
             <button onclick="showPage('sales')" id="btn-sales">Sales</button>
+            <button onclick="showPage('sold')" id="btn-sold">Sold</button>
         </div>
     </nav>
 
@@ -123,29 +124,6 @@
                 </table>
             </div>
         </div>
-        <div class="category-section">
-            <div class="section-header">
-                <h3 style="color: #888;">Sold Items <span id="count-sold" class="count-badge">0</span></h3>
-            </div>
-            <div class="table-container sold-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 5%;">No.</th>
-                            <th style="width: 18%;">Item Name</th>
-                            <th style="width: 10%;">Category</th>
-                            <th style="width: 10%;">Cost</th>
-                            <th style="width: 10%;">Sell Price</th>
-                            <th style="width: 8%;">Profit</th>
-                            <th style="width: 7%;">Loss</th>
-                            <th style="width: 12%;">Status</th>
-                            <th style="width: 15%;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="list-sold"></tbody>
-                </table>
-            </div>
-        </div>
 
         <div id="inv-empty-state" class="empty-message" style="display: none;">No item found.</div>
 
@@ -153,6 +131,53 @@
             <span>Total Inventory (Available)</span>
             <span id="inventory-total-count" class="total-count-value">0</span>
         </div>
+    </div>
+
+    <!-- ========== SOLD PAGE ========== -->
+    <div id="sold-page" class="page" style="display: none;">
+        <header>
+            <h1>Sold</h1>
+            <div class="actions">
+                <div class="search-wrapper">
+                    <input type="text" id="sold-search-box" placeholder="Search sold items...">
+                    <button class="clear-btn" id="clear-sold-search"
+                        onclick="clearSearch('sold-search-box', 'clear-sold-search')">✕</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="sold-category-tabs">
+            <button class="sold-tab-btn active" id="sold-tab-Cloth" onclick="switchSoldTab('Cloth')">Cloth</button>
+            <button class="sold-tab-btn" id="sold-tab-Pant" onclick="switchSoldTab('Pant')">Pant</button>
+            <button class="sold-tab-btn" id="sold-tab-Accessories"
+                onclick="switchSoldTab('Accessories')">Accessories</button>
+        </div>
+
+        <div class="category-section" id="sold-items-section">
+            <div class="section-header">
+                <h3 id="sold-category-label">Cloth <span id="sold-count-badge" class="count-badge">0</span></h3>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">No.</th>
+                            <th style="width: 25%;">Item Name</th>
+                            <th style="width: 12%;">Category</th>
+                            <th style="width: 10%;">Cost</th>
+                            <th style="width: 10%;">Sell Price</th>
+                            <th style="width: 9%;">Profit</th>
+                            <th style="width: 9%;">Loss</th>
+                            <th style="width: 20%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sold-list-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="sold-pagination" class="pagination-container"></div>
+        <div id="sold-empty-state" class="empty-message" style="display: none;">No sold items found.</div>
     </div>
 
     <div id="sales-page" class="page" style="display: none;">

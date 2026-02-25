@@ -602,6 +602,7 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 #search-box,
 #sales-search-box,
 #overview-search-box,
+#sold-search-box,
 #select-inv-search {
     width: 100%;
     padding-right: 30px;
@@ -670,9 +671,17 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     margin-top: 15px;
 }
 
-.profit-preview-box .text-green { color: #4ade80; }
-.profit-preview-box .text-red { color: #f87171; }
-.profit-preview-box .text-neutral { color: #fff; }
+.profit-preview-box .text-green {
+    color: #4ade80;
+}
+
+.profit-preview-box .text-red {
+    color: #f87171;
+}
+
+.profit-preview-box .text-neutral {
+    color: #fff;
+}
 
 .add-group {
     position: relative;
@@ -1149,6 +1158,91 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     color: #fff;
 }
 
+/* =======================================================
+   SOLD PAGE – CATEGORY TABS
+   ======================================================= */
+
+.sold-category-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 0;
+}
+
+.sold-tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 22px;
+    color: #666;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: color 0.25s ease, border-color 0.25s ease;
+    position: relative;
+    bottom: -1px;
+}
+
+.sold-tab-btn:hover {
+    color: #bbb;
+}
+
+.sold-tab-btn.active {
+    color: #fff;
+    border-bottom-color: #fff;
+    font-weight: 700;
+}
+
+/* =======================================================
+   SOLD PAGE – PAGINATION
+   ======================================================= */
+
+.pagination-container {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.pagination-nav {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    color: #aaa;
+    padding: 7px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: #2a2a2a;
+    color: #fff;
+    border-color: #555;
+}
+
+.page-btn.active-page {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    font-weight: 700;
+}
+
+.page-btn.disabled,
+.page-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
 /* ==========================================================================
    MOBILE ONLY STYLES (Max-Width 768px)
    Everything inside here ONLY affects phone screens.
@@ -1377,5 +1471,28 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         background: none !important;
         color: #fff !important;
         -webkit-text-fill-color: #fff !important;
+    }
+
+    /* 10. Sold Page: Tabs & Pagination */
+    .sold-category-tabs {
+        gap: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0;
+    }
+
+    .sold-tab-btn {
+        font-size: 13px;
+        padding: 10px 14px;
+        white-space: nowrap;
+    }
+
+    .pagination-nav {
+        gap: 4px;
+    }
+
+    .page-btn {
+        padding: 7px 10px;
+        font-size: 12px;
     }
 }

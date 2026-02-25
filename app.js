@@ -23,6 +23,14 @@ const salesPerPage = 10;
 let currentDropItemIds = new Set();
 let salesDataLoaded = false;
 
+// =======================================================
+// SOLD PAGE STATE
+// =======================================================
+let soldPageCategory = 'Cloth';  // Default category
+let soldPageCurrentPage = 1;
+const soldItemsPerPage = 20;
+let cachedSoldData = [];         // All sold items (fetched once, re-filtered locally)
+
 // --- INITIALIZE ---
 window.onload = function () {
     // REMOVED: fetchItems(); -> Now handled by restorePageContext
@@ -38,6 +46,10 @@ window.onload = function () {
     setupSearch('search-box', 'clear-inv-search', () => fetchItems(document.getElementById('search-box').value));
     setupSearch('sales-search-box', 'clear-sales-search', () => fetchSales(document.getElementById('sales-search-box').value));
     setupSearch('overview-search-box', 'clear-ov-search', () => fetchSalesItems(currentSalesDropId, document.getElementById('overview-search-box').value));
+    setupSearch('sold-search-box', 'clear-sold-search', () => {
+        soldPageCurrentPage = 1;
+        renderSoldPage();
+    });
 
     const invSearchInput = document.getElementById('select-inv-search');
     if (invSearchInput) {
@@ -219,6 +231,7 @@ function clearSearch(inputId, clearBtnId) {
         if (inputId === 'search-box') fetchItems();
         else if (inputId === 'sales-search-box') fetchSales();
         else if (inputId === 'overview-search-box') fetchSalesItems(currentSalesDropId);
+        else if (inputId === 'sold-search-box') { soldPageCurrentPage = 1; renderSoldPage(); }
     }
 }
 
@@ -249,11 +262,11 @@ async function fetchItems(searchQuery = "") {
         });
     }
 
-    const clothItems = []; const pantItems = []; const accItems = []; const soldItems = [];
+    const clothItems = []; const pantItems = []; const accItems = [];
     if (data) {
         data.forEach(item => {
-            if (item.status === 'sold') soldItems.push(item);
-            else {
+            // Only show available items in inventory
+            if (item.status !== 'sold') {
                 if (item.category === 'Cloth') clothItems.push(item);
                 else if (item.category === 'Pant') pantItems.push(item);
                 else if (item.category === 'Accessories') accItems.push(item);
@@ -261,7 +274,7 @@ async function fetchItems(searchQuery = "") {
         });
     }
 
-    const totalCount = clothItems.length + pantItems.length + accItems.length + soldItems.length;
+    const totalCount = clothItems.length + pantItems.length + accItems.length;
     const emptyState = document.getElementById('inv-empty-state');
     const totalCounter = document.getElementById('inventory-total-container');
 
@@ -280,7 +293,6 @@ async function fetchItems(searchQuery = "") {
     renderTableSection('list-cloth', 'count-cloth', clothItems, false, searchQuery);
     renderTableSection('list-pant', 'count-pant', pantItems, false, searchQuery);
     renderTableSection('list-accessories', 'count-accessories', accItems, false, searchQuery);
-    renderTableSection('list-sold', 'count-sold', soldItems, true, searchQuery);
 }
 
 // Function to fetch GRAND total (update value span only)
@@ -899,7 +911,7 @@ async function confirmDeleteSales() {
 }
 
 function showPage(pageId) {
-    // === NEW: Auto-Reset Filter when leaving Inventory ===
+    // === Auto-Reset Filter when leaving Inventory ===
     if (pageId !== 'inventory') {
         resetInventoryFilter();
     }
@@ -907,13 +919,15 @@ function showPage(pageId) {
     document.getElementById('inventory-page').style.display = 'none';
     document.getElementById('sales-page').style.display = 'none';
     document.getElementById('sales-overview-page').style.display = 'none';
+    document.getElementById('sold-page').style.display = 'none';
     document.getElementById(pageId + (pageId.includes('page') ? '' : '-page')).style.display = 'block';
 
     document.getElementById('btn-inv').classList.remove('active-btn');
     document.getElementById('btn-sales').classList.remove('active-btn');
+    document.getElementById('btn-sold').classList.remove('active-btn');
 
-    // NEW: Save Navigation State (except for sub-pages like overview which are handled separately)
-    if (pageId === 'inventory' || pageId === 'sales') {
+    // Save Navigation State (except for sub-pages like overview which are handled separately)
+    if (pageId === 'inventory' || pageId === 'sales' || pageId === 'sold') {
         localStorage.setItem('amv_activePage', pageId);
     }
 
@@ -932,7 +946,179 @@ function showPage(pageId) {
     } else if (pageId === 'sales-overview') {
         document.getElementById('btn-sales').classList.add('active-btn');
         triggerAnimation('sales-overview-page');
+    } else if (pageId === 'sold') {
+        document.getElementById('btn-sold').classList.add('active-btn');
+        currentSalesDropId = null;
+        triggerAnimation('sold-page');
+        fetchSoldItems();
     }
+}
+
+// =======================================================
+// SOLD PAGE LOGIC
+// =======================================================
+
+async function fetchSoldItems() {
+    const { data, error } = await db.from('items').select('*').eq('status', 'sold');
+    if (error) { console.error(error); return; }
+    cachedSoldData = data || [];
+    renderSoldPage();
+}
+
+function switchSoldTab(category) {
+    soldPageCategory = category;
+    soldPageCurrentPage = 1;
+
+    // Update tab UI
+    document.querySelectorAll('.sold-tab-btn').forEach(btn => btn.classList.remove('active'));
+    const tab = document.getElementById(`sold-tab-${category}`);
+    if (tab) tab.classList.add('active');
+
+    // Clear search
+    const searchBox = document.getElementById('sold-search-box');
+    const clearBtn = document.getElementById('clear-sold-search');
+    if (searchBox) searchBox.value = '';
+    if (clearBtn) clearBtn.style.display = 'none';
+
+    renderSoldPage();
+}
+
+function renderSoldPage() {
+    const searchQuery = (document.getElementById('sold-search-box')?.value || '').toLowerCase().trim();
+    const isSearching = searchQuery.length > 0;
+
+    let filteredItems;
+
+    if (isSearching) {
+        // Search overrides category: show all sold items matching the query
+        filteredItems = cachedSoldData.filter(item =>
+            item.name.toLowerCase().includes(searchQuery) ||
+            item.category.toLowerCase().includes(searchQuery)
+        );
+    } else {
+        // Category filter
+        filteredItems = cachedSoldData.filter(item => item.category === soldPageCategory);
+    }
+
+    // Update header label
+    const labelEl = document.getElementById('sold-category-label');
+    const countBadge = document.getElementById('sold-count-badge');
+    if (labelEl) {
+        labelEl.innerHTML = `${isSearching ? 'Results' : soldPageCategory} <span id="sold-count-badge" class="count-badge">${filteredItems.length}</span>`;
+    }
+
+    const emptyState = document.getElementById('sold-empty-state');
+    const section = document.getElementById('sold-items-section');
+
+    if (filteredItems.length === 0) {
+        if (section) section.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+        document.getElementById('sold-pagination').innerHTML = '';
+        return;
+    }
+
+    if (section) section.style.display = 'block';
+    if (emptyState) emptyState.style.display = 'none';
+
+    // Pagination slice
+    const totalPages = Math.ceil(filteredItems.length / soldItemsPerPage);
+    if (soldPageCurrentPage > totalPages) soldPageCurrentPage = 1;
+    const startIdx = (soldPageCurrentPage - 1) * soldItemsPerPage;
+    const pageItems = filteredItems.slice(startIdx, startIdx + soldItemsPerPage);
+
+    // Render table rows
+    const tbody = document.getElementById('sold-list-body');
+    tbody.innerHTML = '';
+
+    let sumCost = 0, sumSell = 0, sumProfit = 0, sumLoss = 0;
+    let lastDelay = 0;
+
+    pageItems.forEach((item, index) => {
+        const cost = parseFloat(item.cost_price) || 0;
+        const sell = parseFloat(item.sell_price) || 0;
+        const diff = sell - cost;
+        sumCost += cost; sumSell += sell;
+        if (diff >= 0) sumProfit += diff; else sumLoss += Math.abs(diff);
+
+        const profitDisplay = diff >= 0 ? `<span class="profit-text">RM ${diff}</span>` : '-';
+        const lossDisplay = diff < 0 ? `<span class="loss-text">RM ${Math.abs(diff)}</span>` : '-';
+        let delay = index * 0.05; if (delay > 1.0) delay = 1.0; lastDelay = delay;
+        const rowNum = startIdx + index + 1;
+
+        const row = `<tr class="table-row-animate" style="animation-delay: ${delay}s">
+            <td class="row-number">${rowNum}</td>
+            <td><div class="name-wrapper">${item.name}</div></td>
+            <td style="color:#888; font-size:12px">${item.category}</td>
+            <td>RM ${cost}</td>
+            <td>RM ${sell}</td>
+            <td>${profitDisplay}</td>
+            <td>${lossDisplay}</td>
+            <td>
+                <div class="action-cell">
+                    <button class="edit-btn" onclick="openEditModal('${item.id}', '${item.name}', '${item.category}', '${cost}', '${sell}')">Edit</button>
+                    <button class="delete-btn" onclick="openDeleteModal('${item.id}')">Delete</button>
+                </div>
+            </td>
+        </tr>`;
+        tbody.innerHTML += row;
+    });
+
+    // Summary row
+    const costTotal = sumCost > 0 ? `RM ${sumCost}` : '-';
+    const sellTotal = sumSell > 0 ? `RM ${sumSell}` : '-';
+    const profitTotal = sumProfit > 0 ? `<span class="profit-text">RM ${sumProfit}</span>` : '-';
+    const lossTotal = sumLoss > 0 ? `<span class="loss-text">RM ${sumLoss}</span>` : '-';
+    let sumDelay = lastDelay + 0.05; if (sumDelay > 1.5) sumDelay = 1.5;
+
+    tbody.innerHTML += `<tr class="summary-row table-row-animate" style="animation-delay: ${sumDelay}s">
+        <td></td>
+        <td style="text-transform: uppercase; letter-spacing: 1px;">Total</td>
+        <td></td>
+        <td>${costTotal}</td>
+        <td>${sellTotal}</td>
+        <td>${profitTotal}</td>
+        <td>${lossTotal}</td>
+        <td></td>
+    </tr>`;
+
+    // Render pagination
+    renderSoldPagination(totalPages);
+}
+
+function renderSoldPagination(totalPages) {
+    const container = document.getElementById('sold-pagination');
+    container.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const nav = document.createElement('div');
+    nav.className = 'pagination-nav';
+
+    // Prev button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'page-btn' + (soldPageCurrentPage === 1 ? ' disabled' : '');
+    prevBtn.innerText = '← Prev';
+    prevBtn.disabled = soldPageCurrentPage === 1;
+    prevBtn.onclick = () => { soldPageCurrentPage--; renderSoldPage(); };
+    nav.appendChild(prevBtn);
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'page-btn' + (i === soldPageCurrentPage ? ' active-page' : '');
+        btn.innerText = i;
+        btn.onclick = ((p) => () => { soldPageCurrentPage = p; renderSoldPage(); })(i);
+        nav.appendChild(btn);
+    }
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'page-btn' + (soldPageCurrentPage === totalPages ? ' disabled' : '');
+    nextBtn.innerText = 'Next →';
+    nextBtn.disabled = soldPageCurrentPage === totalPages;
+    nextBtn.onclick = () => { soldPageCurrentPage++; renderSoldPage(); };
+    nav.appendChild(nextBtn);
+
+    container.appendChild(nav);
 }
 
 // =======================================================
