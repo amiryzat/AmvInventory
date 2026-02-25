@@ -1370,6 +1370,17 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         width: 100%;
     }
 
+    /* Sold page: keep search + sort icon on the same row */
+    #sold-page .actions {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    #sold-page .search-wrapper {
+        flex: 1;
+        width: auto;
+    }
+
     .search-wrapper {
         width: 100%;
     }
@@ -1576,15 +1587,5 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     .page-btn {
         padding: 7px 10px;
         font-size: 12px;
-    }
-
-    /* Sort wrapper: below search bar, aligned to the right on mobile */
-    .sold-sort-wrapper {
-        align-self: flex-end;
-    }
-
-    #sold-sort-btn {
-        background: #333;
-        border-radius: 4px;
     }
 }

@@ -69,8 +69,12 @@ window.onload = function () {
     updateSortMenuUI();
 
     document.addEventListener('click', (e) => {
+        // Close inventory sort menu if clicking outside its container
         if (!e.target.closest('.sort-container')) {
             document.getElementById('sort-menu').classList.remove('show');
+        }
+        // Close sold sort menu if clicking outside its wrapper
+        if (!e.target.closest('.sold-sort-wrapper')) {
             const soldSortMenu = document.getElementById('sold-sort-menu');
             if (soldSortMenu) soldSortMenu.classList.remove('show');
         }
