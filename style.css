@@ -1520,6 +1520,28 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         padding: 20px;
     }
 
+    /* Edit modal: pin Save Changes button at bottom so it's never hidden by keyboard */
+    #edit-modal .modal-content {
+        display: flex;
+        flex-direction: column;
+        max-height: 80vh;
+        overflow: hidden;
+    }
+
+    #edit-modal .form-group {
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+        padding-bottom: 8px;
+    }
+
+    #edit-modal .modal-actions {
+        flex-shrink: 0;
+        padding-top: 12px;
+        border-top: 1px solid #2a2a2a;
+        background: #1a1a1a;
+    }
+
     #sales-modal .row {
         flex-direction: row;
         gap: 10px;

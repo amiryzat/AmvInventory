@@ -844,8 +844,68 @@ async function updateStatus(id, selectEl, name, cost, listedPrice) {
     fetchInventoryTotal();
 }
 
-async function saveEditItem() { const id = document.getElementById('edit-id').value; const rawName = document.getElementById('edit-name').value; const category = document.getElementById('edit-category').value; const cost = document.getElementById('edit-cost').value; const price = document.getElementById('edit-price').value; const formattedName = toTitleCase(rawName); const { error } = await db.from('items').update({ name: formattedName, category, cost_price: cost, sell_price: price }).eq('id', id); if (!error) { closeEditModal(); if (currentSalesDropId) fetchSalesItems(currentSalesDropId); else fetchItems(); fetchInventoryTotal(); } else alert(error.message); }
-async function confirmDelete() { if (!itemToDeleteId) return; const { error } = await db.from('items').delete().eq('id', itemToDeleteId); if (!error) { closeDeleteModal(); if (currentSalesDropId) fetchSalesItems(currentSalesDropId); else fetchItems(); fetchInventoryTotal(); } else alert(error.message); }
+async function saveEditItem() {
+    const id = document.getElementById('edit-id').value;
+    const rawName = document.getElementById('edit-name').value;
+    const category = document.getElementById('edit-category').value;
+    const cost = document.getElementById('edit-cost').value;
+    const price = document.getElementById('edit-price').value;
+    const formattedName = toTitleCase(rawName);
+
+    const { error } = await db.from('items').update({
+        name: formattedName,
+        category,
+        cost_price: cost,
+        sell_price: price
+    }).eq('id', id);
+
+    if (!error) {
+        closeEditModal();
+        const onSoldPage = document.getElementById('sold-page').style.display !== 'none';
+        if (onSoldPage) {
+            // Update the item in cachedSoldData and re-render in place
+            const idx = cachedSoldData.findIndex(i => String(i.id) === String(id));
+            if (idx !== -1) {
+                cachedSoldData[idx] = {
+                    ...cachedSoldData[idx],
+                    name: formattedName,
+                    category,
+                    cost_price: cost,
+                    sell_price: price
+                };
+            }
+            renderSoldPage();
+        } else if (currentSalesDropId) {
+            fetchSalesItems(currentSalesDropId);
+        } else {
+            fetchItems();
+        }
+        fetchInventoryTotal();
+    } else {
+        alert(error.message);
+    }
+}
+
+async function confirmDelete() {
+    if (!itemToDeleteId) return;
+    const { error } = await db.from('items').delete().eq('id', itemToDeleteId);
+    if (!error) {
+        closeDeleteModal();
+        const onSoldPage = document.getElementById('sold-page').style.display !== 'none';
+        if (onSoldPage) {
+            cachedSoldData = cachedSoldData.filter(i => String(i.id) !== String(itemToDeleteId));
+            soldPageCurrentPage = 1;
+            renderSoldPage();
+        } else if (currentSalesDropId) {
+            fetchSalesItems(currentSalesDropId);
+        } else {
+            fetchItems();
+        }
+        fetchInventoryTotal();
+    } else {
+        alert(error.message);
+    }
+}
 function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
 function openEditModal(id, name, cat, cost, price) { document.getElementById('edit-id').value = id; document.getElementById('edit-name').value = name; document.getElementById('edit-category').value = cat; document.getElementById('edit-cost').value = cost; document.getElementById('edit-price').value = price; document.getElementById('edit-modal').style.display = 'flex'; }
