@@ -1159,6 +1159,88 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 }
 
 /* =======================================================
+   SOLD PAGE – STATUS BADGE & ACTION BUTTONS
+   ======================================================= */
+
+.sold-status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+}
+
+.revert-btn {
+    background: none;
+    border: 1px solid rgba(250, 204, 21, 0.4);
+    color: #facc15;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.revert-btn:hover {
+    background: rgba(250, 204, 21, 0.1);
+    border-color: #facc15;
+}
+
+.revert-confirm-btn {
+    background-color: #4ade80;
+    color: #000;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.revert-confirm-btn:hover {
+    background-color: #22c55e;
+}
+
+/* Sold sort wrapper — sits inline beside the search bar on desktop */
+.sold-sort-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.sold-sort-wrapper .sort-dropdown {
+    top: calc(100% + 8px);
+    right: 0;
+    left: auto;
+}
+
+#sold-sort-btn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    height: 42px;
+    width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#sold-sort-btn:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* =======================================================
    SOLD PAGE – CATEGORY TABS
    ======================================================= */
 
@@ -1473,7 +1555,7 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         -webkit-text-fill-color: #fff !important;
     }
 
-    /* 10. Sold Page: Tabs & Pagination */
+    /* 10. Sold Page: Tabs, Pagination & Sort */
     .sold-category-tabs {
         gap: 4px;
         overflow-x: auto;
@@ -1494,5 +1576,15 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     .page-btn {
         padding: 7px 10px;
         font-size: 12px;
+    }
+
+    /* Sort wrapper: below search bar, aligned to the right on mobile */
+    .sold-sort-wrapper {
+        align-self: flex-end;
+    }
+
+    #sold-sort-btn {
+        background: #333;
+        border-radius: 4px;
     }
 }

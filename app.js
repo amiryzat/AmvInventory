@@ -30,6 +30,8 @@ let soldPageCategory = 'Cloth';  // Default category
 let soldPageCurrentPage = 1;
 const soldItemsPerPage = 20;
 let cachedSoldData = [];         // All sold items (fetched once, re-filtered locally)
+let soldPageSort = 'date_new';   // Default: Newest Sold First
+let soldItemToRevertId = null;   // For revert confirmation modal
 
 // --- INITIALIZE ---
 window.onload = function () {
@@ -69,6 +71,8 @@ window.onload = function () {
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.sort-container')) {
             document.getElementById('sort-menu').classList.remove('show');
+            const soldSortMenu = document.getElementById('sold-sort-menu');
+            if (soldSortMenu) soldSortMenu.classList.remove('show');
         }
         // Close Time Dropdown if clicked outside
         if (!e.target.closest('.time-picker-group') && !e.target.closest('.time-dropdown-list')) {
@@ -959,9 +963,11 @@ function showPage(pageId) {
 // =======================================================
 
 async function fetchSoldItems() {
+    // Client-side sorting handles order; avoid .order('updated_at') in case column doesn't exist
     const { data, error } = await db.from('items').select('*').eq('status', 'sold');
     if (error) { console.error(error); return; }
     cachedSoldData = data || [];
+    updateSoldSortMenuUI();
     renderSoldPage();
 }
 
@@ -1000,9 +1006,28 @@ function renderSoldPage() {
         filteredItems = cachedSoldData.filter(item => item.category === soldPageCategory);
     }
 
+    // === SORTING ===
+    filteredItems = [...filteredItems]; // avoid mutating cache
+    switch (soldPageSort) {
+        case 'date_new':
+            filteredItems.sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+            break;
+        case 'date_old':
+            filteredItems.sort((a, b) => new Date(a.updated_at || a.created_at) - new Date(b.updated_at || b.created_at));
+            break;
+        case 'name':
+            filteredItems.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+            break;
+        case 'price_high':
+            filteredItems.sort((a, b) => (parseFloat(b.sell_price) || 0) - (parseFloat(a.sell_price) || 0));
+            break;
+        case 'price_low':
+            filteredItems.sort((a, b) => (parseFloat(a.sell_price) || 0) - (parseFloat(b.sell_price) || 0));
+            break;
+    }
+
     // Update header label
     const labelEl = document.getElementById('sold-category-label');
-    const countBadge = document.getElementById('sold-count-badge');
     if (labelEl) {
         labelEl.innerHTML = `${isSearching ? 'Results' : soldPageCategory} <span id="sold-count-badge" class="count-badge">${filteredItems.length}</span>`;
     }
@@ -1045,6 +1070,9 @@ function renderSoldPage() {
         let delay = index * 0.05; if (delay > 1.0) delay = 1.0; lastDelay = delay;
         const rowNum = startIdx + index + 1;
 
+        // Status badge — items on this page are 'sold', but show a live badge
+        const statusBadge = `<span class="sold-status-badge">Sold</span>`;
+
         const row = `<tr class="table-row-animate" style="animation-delay: ${delay}s">
             <td class="row-number">${rowNum}</td>
             <td><div class="name-wrapper">${item.name}</div></td>
@@ -1053,9 +1081,11 @@ function renderSoldPage() {
             <td>RM ${sell}</td>
             <td>${profitDisplay}</td>
             <td>${lossDisplay}</td>
+            <td>${statusBadge}</td>
             <td>
                 <div class="action-cell">
-                    <button class="edit-btn" onclick="openEditModal('${item.id}', '${item.name}', '${item.category}', '${cost}', '${sell}')">Edit</button>
+                    <button class="edit-btn" onclick="openEditModal('${item.id}', '${item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${item.category}', '${cost}', '${sell}')">Edit</button>
+                    <button class="revert-btn" onclick="openRevertModal('${item.id}', '${item.name.replace(/'/g, "\\'")}')">Revert</button>
                     <button class="delete-btn" onclick="openDeleteModal('${item.id}')">Delete</button>
                 </div>
             </td>
@@ -1078,6 +1108,7 @@ function renderSoldPage() {
         <td>${sellTotal}</td>
         <td>${profitTotal}</td>
         <td>${lossTotal}</td>
+        <td></td>
         <td></td>
     </tr>`;
 
@@ -1119,6 +1150,64 @@ function renderSoldPagination(totalPages) {
     nav.appendChild(nextBtn);
 
     container.appendChild(nav);
+}
+
+function applySoldSort(type) {
+    soldPageSort = type;
+    soldPageCurrentPage = 1;
+    updateSoldSortMenuUI();
+    renderSoldPage();
+}
+
+function updateSoldSortMenuUI() {
+    document.querySelectorAll('#sold-sort-menu .sort-option').forEach(e => e.classList.remove('active'));
+    const idMap = {
+        'date_new': 'sold-opt-new',
+        'date_old': 'sold-opt-old',
+        'name': 'sold-opt-name',
+        'price_high': 'sold-opt-high',
+        'price_low': 'sold-opt-low',
+    };
+    const el = document.getElementById(idMap[soldPageSort]);
+    if (el) el.classList.add('active');
+}
+
+function toggleSoldSortMenu() {
+    document.getElementById('sold-sort-menu').classList.toggle('show');
+}
+
+// Revert: Sold → Available
+function openRevertModal(itemId, itemName) {
+    soldItemToRevertId = itemId;
+    const modal = document.getElementById('revert-sold-modal');
+    const nameEl = document.getElementById('revert-item-name');
+    if (nameEl) nameEl.innerText = itemName;
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeRevertModal() {
+    soldItemToRevertId = null;
+    const modal = document.getElementById('revert-sold-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function confirmRevert() {
+    if (!soldItemToRevertId) return;
+    const { error } = await db.from('items').update({
+        status: 'available',
+        sold_in_drop_id: null
+    }).eq('id', soldItemToRevertId);
+
+    if (!error) {
+        closeRevertModal();
+        // Remove from cache & re-render without full fetch
+        cachedSoldData = cachedSoldData.filter(i => i.id !== soldItemToRevertId);
+        soldPageCurrentPage = 1;
+        renderSoldPage();
+        fetchInventoryTotal(); // update inventory count
+    } else {
+        alert(error.message);
+    }
 }
 
 // =======================================================

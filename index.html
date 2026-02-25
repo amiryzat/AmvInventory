@@ -143,6 +143,29 @@
                     <button class="clear-btn" id="clear-sold-search"
                         onclick="clearSearch('sold-search-box', 'clear-sold-search')">✕</button>
                 </div>
+                <div class="sold-sort-wrapper">
+                    <button id="sold-sort-btn" onclick="toggleSoldSortMenu()" title="Sort Sold Items">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="21" y1="10" x2="3" y2="10"></line>
+                            <line x1="21" y1="6" x2="3" y2="6"></line>
+                            <line x1="21" y1="14" x2="3" y2="14"></line>
+                            <line x1="21" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div id="sold-sort-menu" class="sort-dropdown">
+                        <div id="sold-opt-new" class="sort-option" onclick="applySoldSort('date_new')"><span>Newest
+                                Sold</span></div>
+                        <div id="sold-opt-old" class="sort-option" onclick="applySoldSort('date_old')"><span>Oldest
+                                Sold</span></div>
+                        <div id="sold-opt-name" class="sort-option" onclick="applySoldSort('name')"><span>Name
+                                (A–Z)</span></div>
+                        <div id="sold-opt-high" class="sort-option" onclick="applySoldSort('price_high')"><span>Highest
+                                Price</span></div>
+                        <div id="sold-opt-low" class="sort-option" onclick="applySoldSort('price_low')"><span>Lowest
+                                Price</span></div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -162,12 +185,13 @@
                     <thead>
                         <tr>
                             <th style="width: 5%;">No.</th>
-                            <th style="width: 25%;">Item Name</th>
-                            <th style="width: 12%;">Category</th>
-                            <th style="width: 10%;">Cost</th>
-                            <th style="width: 10%;">Sell Price</th>
-                            <th style="width: 9%;">Profit</th>
-                            <th style="width: 9%;">Loss</th>
+                            <th style="width: 20%;">Item Name</th>
+                            <th style="width: 10%;">Category</th>
+                            <th style="width: 8%;">Cost</th>
+                            <th style="width: 8%;">Sell Price</th>
+                            <th style="width: 8%;">Profit</th>
+                            <th style="width: 8%;">Loss</th>
+                            <th style="width: 13%;">Status</th>
                             <th style="width: 20%;">Action</th>
                         </tr>
                     </thead>
@@ -486,6 +510,21 @@
                     onclick="closeDeleteModal()"
                     style="border: 1px solid #444; padding: 8px 16px; border-radius: 4px; color: #fff;">Cancel</button><button
                     class="danger-btn" onclick="confirmDelete()">Delete</button></div>
+        </div>
+    </div>
+    <div id="revert-sold-modal" class="modal">
+        <div class="modal-content" style="max-width: 380px; text-align: center;">
+            <h2 style="margin-bottom: 8px;">Revert to Available?</h2>
+            <p style="color: #aaa; font-size: 14px; margin-bottom: 6px;">
+                <span id="revert-item-name" style="color: #fff; font-weight: 600;"></span>
+            </p>
+            <p style="color: #888; font-size: 13px; margin-bottom: 22px;">This item will be marked as <strong
+                    style="color:#4ade80">Available</strong> and returned to your inventory.</p>
+            <div class="modal-actions" style="justify-content: center; gap: 15px;">
+                <button class="cancel-btn" onclick="closeRevertModal()"
+                    style="border: 1px solid #444; padding: 8px 16px; border-radius: 4px; color: #fff;">Cancel</button>
+                <button class="revert-confirm-btn" onclick="confirmRevert()">Mark Available</button>
+            </div>
         </div>
     </div>
     <div id="remove-modal" class="modal">
