@@ -1439,6 +1439,10 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         transition: background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.3s ease;
     }
 
+    .back-link {
+        padding-top: 20px;
+    }
+
     nav.scrolled {
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     }
@@ -1534,8 +1538,8 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     }
 
     h1 {
-        font-size: 26px;
-        padding-top: 20px;
+        font-size: 27px;
+        padding-top: 18px;
     }
 
     .actions {
@@ -1754,12 +1758,7 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* 9. Stop Constant Logo Repainting */
-    .logo {
-        animation: none !important;
-        background: none !important;
-        color: #fff !important;
-        -webkit-text-fill-color: #fff !important;
-    }
+
 
     /* 10. Sold Page: Tabs, Pagination & Sort */
     .sold-category-tabs {
