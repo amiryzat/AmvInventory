@@ -16,6 +16,14 @@
     <div id="app-wrapper">
         <nav>
             <div class="logo">AmvInventory</div>
+
+            <!-- Sidebar Drawer (Slides in from right) -->
+            <div class="menu" id="nav-menu">
+                <button onclick="showPage('inventory')" class="active-btn" id="btn-inv">Inventory</button>
+                <button onclick="showPage('sales')" id="btn-sales">Sales</button>
+                <button onclick="showPage('sold')" id="btn-sold">Sold</button>
+            </div>
+
             <!-- Hamburger button restores geometrically perfect flex alignment inside nav -->
             <button class="hamburger-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()"
                 aria-label="Open navigation menu">
@@ -587,14 +595,7 @@
     <!-- Mobile-only Overlay -->
     <div class="menu-overlay" id="mobile-overlay" onclick="closeMobileMenu()"></div>
 
-    <!-- Sidebar Drawer (Slides in from right) -->
-    <div class="menu" id="nav-menu">
-        <button onclick="showPage('inventory')" class="active-btn" id="btn-inv">Inventory</button>
-        <button onclick="showPage('sales')" id="btn-sales">Sales</button>
-        <button onclick="showPage('sold')" id="btn-sold">Sold</button>
-    </div>
-
-    <!-- Hamburger is now in nav for flex alignment -->
+    <!-- Menu is now inside nav for correct hierarchy -->
 
     <script src="app.js"></script>
 </body>
