@@ -12,10 +12,20 @@
 
 <body>
 
-    <!-- App Wrapper encapsulates header + all pages for the blur effect -->
+    <!-- App Wrapper encapsulates header + all pages -->
     <div id="app-wrapper">
         <nav>
             <div class="logo">AmvInventory</div>
+            <!-- Hamburger button restores geometrically perfect flex alignment inside nav -->
+            <button class="hamburger-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()"
+                aria-label="Open navigation menu">
+                <svg class="hamburger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round">
+                    <line class="ham-line ham-line-top" x1="3" y1="6" x2="21" y2="6"></line>
+                    <line class="ham-line ham-line-mid" x1="3" y1="12" x2="21" y2="12"></line>
+                    <line class="ham-line ham-line-bot" x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
         </nav>
 
         <div id="inventory-page" class="page">
@@ -584,15 +594,7 @@
         <button onclick="showPage('sold')" id="btn-sold">Sold</button>
     </div>
 
-    <!-- Hamburger / X Icon (Positioned fixed, above everything) -->
-    <button class="hamburger-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open navigation menu">
-        <svg class="hamburger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round">
-            <line class="ham-line ham-line-top" x1="3" y1="6" x2="21" y2="6"></line>
-            <line class="ham-line ham-line-mid" x1="3" y1="12" x2="21" y2="12"></line>
-            <line class="ham-line ham-line-bot" x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-    </button>
+    <!-- Hamburger is now in nav for flex alignment -->
 
     <script src="app.js"></script>
 </body>

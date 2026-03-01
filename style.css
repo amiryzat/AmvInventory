@@ -57,16 +57,6 @@ nav {
     z-index: 100;
 }
 
-/* --- APP WRAPPER (for full-page blur) --- */
-#app-wrapper {
-    transition: filter 0.35s ease;
-}
-
-#app-wrapper.blur-active {
-    filter: blur(8px);
-    pointer-events: none;
-}
-
 .logo {
     font-size: 24px;
     font-weight: bold;
@@ -130,13 +120,11 @@ nav {
 /* --- HAMBURGER BUTTON (desktop: hidden) --- */
 .hamburger-btn {
     display: none;
-    position: fixed;
-    top: 15px;
-    right: 20px;
     background: none;
     border: none;
     color: #fff;
     cursor: pointer;
+    position: relative;
     z-index: 1002;
     /* Must be the highest element to stay clickable above sidebar (1001) */
     padding: 8px;
@@ -179,7 +167,8 @@ nav {
     position: fixed;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.65);
-    /* backdrop-filter removed here: the blur applies to #app-wrapper instead. */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 998;
     opacity: 0;
     transition: opacity 0.35s ease;
@@ -1429,9 +1418,12 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         padding-bottom: 80px;
     }
 
-
     nav {
+        position: static;
+        /* Drop sticky to avoid trapping z-index below overlay */
         padding: 15px 20px;
+        display: flex;
+        align-items: center;
         justify-content: space-between;
     }
 

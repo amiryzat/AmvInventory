@@ -1322,11 +1322,9 @@ function openMobileMenu() {
     const menu = document.getElementById('nav-menu');
     const overlay = document.getElementById('mobile-overlay');
     const btn = document.getElementById('mobile-menu-btn');
-    const wrapper = document.getElementById('app-wrapper');
     if (menu) menu.classList.add('open');
     if (overlay) overlay.classList.add('open');
     if (btn) btn.classList.add('open');
-    if (wrapper) wrapper.classList.add('blur-active');
     document.body.style.overflow = 'hidden';
 }
 
@@ -1334,10 +1332,8 @@ function closeMobileMenu() {
     const menu = document.getElementById('nav-menu');
     const overlay = document.getElementById('mobile-overlay');
     const btn = document.getElementById('mobile-menu-btn');
-    const wrapper = document.getElementById('app-wrapper');
     if (menu) menu.classList.remove('open');
     if (overlay) overlay.classList.remove('open');
     if (btn) btn.classList.remove('open');
-    if (wrapper) wrapper.classList.remove('blur-active');
     document.body.style.overflow = '';
 }
