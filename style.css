@@ -18,6 +18,7 @@ body {
     background-color: #121212;
     color: #ffffff;
     position: relative;
+    padding-top: 0;
     /* overflow-x handled natively above */
 }
 
@@ -1414,14 +1415,21 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 @media screen and (max-width: 768px) {
 
     /* 1. Reset Page & Layout */
+    body {
+        padding-top: 60px;
+        /* Compensate for fixed nav header taking it out of flow */
+    }
+
     .page {
         padding: 15px;
         padding-bottom: 80px;
     }
 
     nav {
-        position: sticky;
+        position: fixed;
         top: 0;
+        left: 0;
+        right: 0;
         z-index: 1000;
         padding: 15px 20px;
         display: flex;
@@ -1526,7 +1534,8 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     }
 
     h1 {
-        font-size: 28px;
+        font-size: 26px;
+        padding-top: 20px;
     }
 
     .actions {
